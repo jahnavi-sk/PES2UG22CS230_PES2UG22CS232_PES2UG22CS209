@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - URL Shortener</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .error-container {
+            margin-top: 50px;
+            padding: 20px;
+            border: 1px solid #e74c3c;
+            border-radius: 5px;
+            background-color: #fef5f5;
+        }
+        .error-message {
+            color: #e74c3c;
+            font-size: 18px;
+        }
+        .home-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1>Error</h1>
+        <p class="error-message">{{ message }}</p>
+        <a href="/" class="home-link">Back to Home</a>
+    </div>
+</body>
+</html>
