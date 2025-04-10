@@ -2,6 +2,7 @@
 
 
 ###### Docker commands
+Run Docker engine before running the following commands:
 
 ```
 docker build -t url-shortener .
