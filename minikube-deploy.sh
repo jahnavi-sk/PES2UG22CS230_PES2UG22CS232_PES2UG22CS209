@@ -80,15 +80,12 @@ kubectl logs -l app=url-shortener --tail=20 || echo "⚠️ Unable to fetch logs
 
 echo
 echo "🚀 Optionally run stress test using:"
-echo "curl http://url-shortener.local"
-echo "or"
-echo "hey -n 100 -c 10 http://url-shortener.local"
+# hey -n 1000 -c 50 http://$(minikube ip):$(kubectl get svc url-shortener-service -o jsonpath='{.spec.ports[0].nodePort}')
+# hey -n 1000 -c 50 http://$(minikube ip):$(kubectl get svc url-shortener-service -o jsonpath='{.spec.ports[0].nodePort}')/shorten
 
 
-echo
 echo
 echo "===== Deployment with Scaling, Load Balancing & Monitoring Complete ====="
 echo "To clean up later, run: ./minikube-cleanup.sh"
 
-
-
+minikube service url-shortener-service --url
