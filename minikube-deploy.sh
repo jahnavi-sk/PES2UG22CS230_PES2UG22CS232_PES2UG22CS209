@@ -26,8 +26,7 @@ echo "Image built successfully."
 
 echo "Step 4: Creating Kubernetes resources..."
 # Use indianexpress.com as the domain
-DOMAIN_NAME="indianexpress.com"
-echo "Using domain: ${DOMAIN_NAME}"
+
 
 cat <<EOF > deployment.yaml
 apiVersion: apps/v1
