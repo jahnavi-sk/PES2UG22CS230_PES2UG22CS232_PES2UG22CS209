@@ -63,12 +63,32 @@ kubectl top pods || echo "⚠️ 'kubectl top pods' needs more time or may not b
 
 echo
 echo "🌐 LoadBalancer or NodePort Service:"
-minikube service url-shortener-service --url
+# minikube service url-shortener-service --url
 
 echo
 echo "📋 Ingress routes:"
 kubectl get ingress
 
+
+echo "minikube service url-shortener-service"
+echo
+
+
+echo
+echo "📄 Recent Logs (url-shortener):"
+kubectl logs -l app=url-shortener --tail=20 || echo "⚠️ Unable to fetch logs"
+
+echo
+echo "🚀 Optionally run stress test using:"
+echo "curl http://url-shortener.local"
+echo "or"
+echo "hey -n 100 -c 10 http://url-shortener.local"
+
+
+echo
 echo
 echo "===== Deployment with Scaling, Load Balancing & Monitoring Complete ====="
 echo "To clean up later, run: ./minikube-cleanup.sh"
+
+
+

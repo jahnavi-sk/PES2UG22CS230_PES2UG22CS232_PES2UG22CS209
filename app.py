@@ -135,6 +135,7 @@
 #     app.run(host='0.0.0.0', debug=False)
 
 
+import datetime
 from flask import Flask, request, redirect, render_template, jsonify
 import redis
 import uuid
@@ -236,6 +237,15 @@ def delete_url(short_id):
         logger.error(f"Error deleting from Redis: {e}")
         return jsonify({"error": "Failed to delete URL from database"}), 500
 
+
+@app.route('/pod-info')
+def pod_info():
+    import os
+    pod_name = os.environ.get('HOSTNAME', 'unknown')
+    return jsonify({
+        'pod_name': pod_name,
+        'timestamp': datetime.datetime.now().isoformat()
+    })
 if __name__ == '__main__':
     if DOMAIN_NAME:
         logger.info(f"Using configured domain: {DOMAIN_NAME}")
