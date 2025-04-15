@@ -18,6 +18,11 @@ spec:
         imagePullPolicy: Never
         ports:
         - containerPort: 5000
+        resources:
+          requests:
+            cpu: "100m"
+          limits:
+            cpu: "500m"
         env:
         - name: REDIS_HOST
           value: redis-service
@@ -34,14 +39,14 @@ spec:
   ports:
   - port: 80
     targetPort: 5000
-  type: NodePort
+  type: LoadBalancer
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: redis
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: redis

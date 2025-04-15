@@ -2,7 +2,7 @@
 
 set -e  # Exit on any error
 
-echo "===== URL Shortener Minikube Deployment ====="
+echo "===== URL Shortener Minikube Deployment with Scaling & Monitoring ====="
 
 echo "Step 1: Checking Minikube status..."
 if ! command -v minikube &> /dev/null; then
@@ -24,94 +24,51 @@ echo "Step 3: Building Docker image inside Minikube..."
 docker build -t url-shortener:latest .
 echo "Image built successfully."
 
-echo "Step 4: Creating Kubernetes resources..."
-# Use indianexpress.com as the domain
+echo "Step 4: Enabling metrics-server for autoscaling..."
+minikube addons enable metrics-server
 
+echo "Step 5: Applying Kubernetes YAMLs (config, Redis, URL shortener)..."
+kubectl apply -f url-shortener-config.yaml
+kubectl apply -f redis-deployment.yaml
+kubectl apply -f redis-secret.yaml
+kubectl apply -f redis-service.yaml
+kubectl apply -f url-shortener-deployment.yaml
+kubectl apply -f url-shortener-service.yaml
 
-cat <<EOF > deployment.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: url-shortener
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: url-shortener
-  template:
-    metadata:
-      labels:
-        app: url-shortener
-    spec:
-      containers:
-      - name: url-shortener
-        image: url-shortener:latest
-        imagePullPolicy: Never
-        ports:
-        - containerPort: 5000
-        env:
-        - name: REDIS_HOST
-          value: redis-service
-        - name: DOMAIN_NAME
-          value: "${DOMAIN_NAME}"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: url-shortener-service
-spec:
-  selector:
-    app: url-shortener
-  ports:
-  - port: 80
-    targetPort: 5000
-  type: NodePort
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: redis
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: redis
-  template:
-    metadata:
-      labels:
-        app: redis
-    spec:
-      containers:
-      - name: redis
-        image: redis:alpine
-        ports:
-        - containerPort: 6379
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: redis-service
-spec:
-  selector:
-    app: redis
-  ports:
-  - port: 6379
-    targetPort: 6379
-EOF
+echo "Step 6: Setting up Ingress controller..."
+minikube addons enable ingress
+kubectl apply -f ingress.yaml || echo "⚠️ No ingress.yaml file found or applied"
 
-kubectl apply -f deployment.yaml
+echo "Step 7: Creating or updating Horizontal Pod Autoscaler..."
+kubectl delete hpa url-shortener --ignore-not-found
+kubectl autoscale deployment url-shortener --cpu-percent=50 --min=1 --max=5
 
-echo "Step 5: Waiting for pods to be ready..."
-kubectl wait --for=condition=ready pod -l app=url-shortener --timeout=60s
-kubectl wait --for=condition=ready pod -l app=redis --timeout=60s
+echo "Step 8: Waiting for pods to be ready..."
+kubectl wait --for=condition=ready pod -l app=url-shortener --timeout=60s || true
+kubectl wait --for=condition=ready pod -l app=redis --timeout=60s || true
 
-echo "Step 6: Getting access information..."
-echo "To access your application, run the following command in a separate terminal:"
-echo 
-echo "minikube service url-shortener-service"
-echo
-echo "This will display the service information table and open the application in your browser."
+echo "Step 9: Displaying runtime stats..."
 
 echo
-echo "===== Deployment Complete ====="
+echo "🟢 Current Pods:"
+kubectl get pods -o wide
+
+echo
+echo "📊 HPA Status:"
+kubectl get hpa
+
+echo
+echo "🧠 Resource Usage (via metrics-server):"
+kubectl top pods || echo "⚠️ 'kubectl top pods' needs more time or may not be supported"
+
+echo
+echo "🌐 LoadBalancer or NodePort Service:"
+minikube service url-shortener-service --url
+
+echo
+echo "📋 Ingress routes:"
+kubectl get ingress
+
+echo
+echo "===== Deployment with Scaling, Load Balancing & Monitoring Complete ====="
 echo "To clean up later, run: ./minikube-cleanup.sh"
